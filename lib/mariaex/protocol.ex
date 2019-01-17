@@ -1144,7 +1144,7 @@ defmodule Mariaex.Protocol do
   end
 
   defp ping_handle(packet(msg: eof_resp()) = p, :ping, %{buffer: buffer} = state) when is_binary(buffer) do
-    Logger.warn("ANDRE GOT PING EOF with #{inspect p} and #{inspect state}")
+    Logger.warn("ANDRE GOT PING EOF with #{inspect p} and #{inspect state}\n and trace:#{inspect Process.info(self(), :current_stacktrace)}")
     {:ok, state}
   end
 
