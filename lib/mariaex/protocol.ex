@@ -12,6 +12,8 @@ defmodule Mariaex.Protocol do
   use DBConnection
   use Bitwise
 
+  require Logger
+
   @reserved_prefix "MARIAEX_"
   @timeout 5000
   @cache_size 100
@@ -1179,8 +1181,19 @@ defmodule Mariaex.Protocol do
     end
   end
 
-  defp ping_handle(packet(msg: ok_resp()), :ping, %{buffer: buffer} = state) when is_binary(buffer) do
+  defp ping_handle(packet(msg: ok_resp()) = p, :ping, %{buffer: buffer} = state) when is_binary(buffer) do
+    Logger.warn("ANDRE GOT PING OK  with #{inspect p} and #{inspect state}")
     {:ok, state}
+  end
+
+  defp ping_handle(packet(msg: eof_resp()) = p, :ping, %{buffer: buffer} = state) when is_binary(buffer) do
+    Logger.warn("ANDRE GOT PING EOF with #{inspect p} and #{inspect state}\n and trace:#{inspect Process.info(self(), :current_stacktrace)}")
+    {:ok, state}
+  end
+
+  defp ping_handle(error = packet(msg: error_resp()), :ping, %{buffer: buffer} = state) when is_binary(buffer) do
+    Logger.warn("ANDRE GOT PING ERROR with #{inspect error} and #{inspect state}")
+    {:disconnect, error, state}
   end
 
   defp send_text_query(s, statement) do
